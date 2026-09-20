@@ -1,0 +1,122 @@
+[
+  {
+    "name": "explicit mixed case and underscores",
+    "fn": "normalize_locale_id",
+    "input": " DE_Ch ",
+    "expected": "de-ch"
+  },
+  {
+    "name": "explicit region absent from correspondence tables survives",
+    "fn": "normalize_locale_id",
+    "input": "EN-CH",
+    "expected": "en-ch"
+  },
+  {
+    "name": "explicit script and region survive",
+    "fn": "normalize_locale_id",
+    "input": "zh_Hant_TW",
+    "expected": "zh-hant-tw"
+  },
+  {
+    "name": "unknown language and region do not fall back",
+    "fn": "normalize_locale_id",
+    "input": " XX_YY ",
+    "expected": "xx-yy"
+  },
+  {
+    "name": "bare language does not acquire a region",
+    "fn": "normalize_locale_id",
+    "input": "EN",
+    "expected": "en"
+  },
+  {
+    "name": "empty input does not acquire a default",
+    "fn": "normalize_locale_id",
+    "input": " \t\n",
+    "expected": ""
+  },
+  {
+    "name": "normalization does not repair malformed identifiers",
+    "fn": "normalize_locale_id",
+    "input": "en__US",
+    "expected": "en--us"
+  },
+  {
+    "name": "all six ASCII whitespace characters trim at both edges",
+    "fn": "normalize_locale_id",
+    "input": " \t\n\r\u000b\fEN_CH\f\u000b\r\n\t ",
+    "expected": "en-ch"
+  },
+  {
+    "name": "byte order mark is preserved for caller validation",
+    "fn": "normalize_locale_id",
+    "input": "﻿EN_CH﻿",
+    "expected": "﻿en-ch﻿"
+  },
+  {
+    "name": "next line is preserved for caller validation",
+    "fn": "normalize_locale_id",
+    "input": "EN_CH",
+    "expected": "en-ch"
+  },
+  {
+    "name": "already lowercase passes through",
+    "fn": "normalize_locale_id",
+    "input": "de-ch",
+    "expected": "de-ch"
+  },
+  {
+    "name": "well-formed simple codes",
+    "fn": "is_well_formed",
+    "input": "de-ch",
+    "expected": true
+  },
+  {
+    "name": "well-formed bare language",
+    "fn": "is_well_formed",
+    "input": "en",
+    "expected": true
+  },
+  {
+    "name": "well-formed script and region",
+    "fn": "is_well_formed",
+    "input": "zh-Hant-TW",
+    "expected": true
+  },
+  {
+    "name": "empty is not well-formed",
+    "fn": "is_well_formed",
+    "input": "",
+    "expected": false
+  },
+  {
+    "name": "double hyphen is not well-formed",
+    "fn": "is_well_formed",
+    "input": "en--us",
+    "expected": false
+  },
+  {
+    "name": "single-letter language is not well-formed",
+    "fn": "is_well_formed",
+    "input": "x生きる",
+    "expected": false
+  },
+  {
+    "name": "equality ignores case and separators",
+    "fn": "locale_eq",
+    "input": [
+      "DE_CH",
+      "de-ch"
+    ],
+    "expected": true
+  },
+  {
+    "name": "inequality across regions",
+    "fn": "locale_eq",
+    "input": [
+      "de-ch",
+      "de-de"
+    ],
+    "expected": false
+  }
+]

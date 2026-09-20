@@ -1,0 +1,74 @@
+[
+  {
+    "name": "deepl source is the uppercase base",
+    "fn": "deepl_source",
+    "input": "de-CH",
+    "expected": "DE"
+  },
+  {
+    "name": "deepl source of bare code",
+    "fn": "deepl_source",
+    "input": "en",
+    "expected": "EN"
+  },
+  {
+    "name": "deepl target defaults English to British",
+    "fn": "deepl_target",
+    "input": "en",
+    "expected": "EN-GB"
+  },
+  {
+    "name": "deepl target keeps explicit US",
+    "fn": "deepl_target",
+    "input": "en-US",
+    "expected": "EN-US"
+  },
+  {
+    "name": "deepl target keeps explicit GB",
+    "fn": "deepl_target",
+    "input": "en-gb",
+    "expected": "EN-GB"
+  },
+  {
+    "name": "deepl target defaults Portuguese to European",
+    "fn": "deepl_target",
+    "input": "pt",
+    "expected": "PT-PT"
+  },
+  {
+    "name": "deepl target keeps Brazilian",
+    "fn": "deepl_target",
+    "input": "pt-BR",
+    "expected": "PT-BR"
+  },
+  {
+    "name": "deepl target maps Chinese to Hans",
+    "fn": "deepl_target",
+    "input": "zh",
+    "expected": "ZH-HANS"
+  },
+  {
+    "name": "deepl target falls back to uppercase base",
+    "fn": "deepl_target",
+    "input": "fr-CH",
+    "expected": "FR"
+  },
+  {
+    "name": "deepl target accepts lowercase storage form",
+    "fn": "deepl_target",
+    "input": "de-ch",
+    "expected": "DE"
+  },
+  {
+    "name": "google language is the lowercase base",
+    "fn": "google_language",
+    "input": "de-CH",
+    "expected": "de"
+  },
+  {
+    "name": "google language of bare code",
+    "fn": "google_language",
+    "input": "EN",
+    "expected": "en"
+  }
+]

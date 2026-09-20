@@ -1,0 +1,62 @@
+[
+  {
+    "name": "lowercase storage form projects to BCP 47",
+    "fn": "to_bcp47",
+    "input": "de-ch",
+    "expected": "de-CH"
+  },
+  {
+    "name": "explicit mixed case and underscores project to BCP 47",
+    "fn": "to_bcp47",
+    "input": "EN_CH",
+    "expected": "en-CH"
+  },
+  {
+    "name": "bare language projects to itself",
+    "fn": "to_bcp47",
+    "input": "EN",
+    "expected": "en"
+  },
+  {
+    "name": "script subtag takes title case",
+    "fn": "to_bcp47",
+    "input": "zh-hant-tw",
+    "expected": "zh-Hant-TW"
+  },
+  {
+    "name": "numeric region survives uppercasing",
+    "fn": "to_bcp47",
+    "input": "es-419",
+    "expected": "es-419"
+  },
+  {
+    "name": "already BCP 47 is idempotent",
+    "fn": "to_bcp47",
+    "input": "de-CH",
+    "expected": "de-CH"
+  },
+  {
+    "name": "empty projects to empty",
+    "fn": "to_bcp47",
+    "input": "",
+    "expected": ""
+  },
+  {
+    "name": "base language lowercases",
+    "fn": "base_language",
+    "input": "DE-CH",
+    "expected": "de"
+  },
+  {
+    "name": "base language of bare code",
+    "fn": "base_language",
+    "input": "en",
+    "expected": "en"
+  },
+  {
+    "name": "base language of script code",
+    "fn": "base_language",
+    "input": "zh-Hant-TW",
+    "expected": "zh"
+  }
+]

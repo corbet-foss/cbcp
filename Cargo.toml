@@ -1,0 +1,27 @@
+[package]
+name = "cbcp"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+description = "Deterministic BCP 47 locale-ID casting and vendor code mapping: normalize, display, validate, DeepL/Google adapters. No models, no I/O."
+license = "LGPL-3.0-only WITH LGPL-3.0-linking-exception"
+repository = "https://github.com/corbet-foss/cbcp"
+
+documentation = "https://docs.rs/cbcp"
+keywords = ["i18n", "locale", "bcp47"]
+categories = ["internationalization", "text-processing"]
+
+include = ["Cargo.toml", "Cargo.lock", "src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE", "LICENSE.md", "LICENSES/**"]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+too_many_lines = "allow"
+
+[dev-dependencies]
+serde_json = "1"
