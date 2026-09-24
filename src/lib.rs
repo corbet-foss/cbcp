@@ -104,7 +104,9 @@ pub fn base_language(code: &str) -> String {
 pub fn is_well_formed(code: &str) -> bool {
     let mut parts = code.split('-');
     match parts.next() {
-        Some(first) if (2..=3).contains(&first.len()) && first.bytes().all(|b| b.is_ascii_alphabetic()) => {}
+        Some(first)
+            if (2..=3).contains(&first.len()) && first.bytes().all(|b| b.is_ascii_alphabetic()) => {
+        }
         _ => return false,
     }
     for part in parts {
@@ -159,7 +161,9 @@ mod vector_tests {
     fn apply(fn_name: &str, input: &serde_json::Value) -> serde_json::Value {
         let s = |v: &serde_json::Value| v.as_str().unwrap_or("").to_owned();
         match fn_name {
-            "normalize_locale_id" => serde_json::Value::String(super::normalize_locale_id(&s(input))),
+            "normalize_locale_id" => {
+                serde_json::Value::String(super::normalize_locale_id(&s(input)))
+            }
             "to_bcp47" => serde_json::Value::String(super::to_bcp47(&s(input))),
             "base_language" => serde_json::Value::String(super::base_language(&s(input))),
             "is_well_formed" => serde_json::Value::Bool(super::is_well_formed(&s(input))),
@@ -190,7 +194,8 @@ mod vector_tests {
         assert!(!files.is_empty(), "at least one vector file");
         for file in files {
             let raw = std::fs::read_to_string(&file).expect("vector file readable");
-            let vectors: Vec<serde_json::Value> = serde_json::from_str(&raw).expect("vectors parse");
+            let vectors: Vec<serde_json::Value> =
+                serde_json::from_str(&raw).expect("vectors parse");
             for v in &vectors {
                 let name = v["name"].as_str().unwrap_or("?");
                 let actual = apply(v["fn"].as_str().unwrap_or(""), &v["input"]);
