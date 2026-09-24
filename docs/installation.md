@@ -3,11 +3,11 @@
 | Environment | Command |
 |---|---|
 | Rust / Cargo | `cargo add cbcp` |
-| Node.js / npm | `npm install @corbet-foss/cbcp` |
-| pnpm | `pnpm add @corbet-foss/cbcp` |
-| Yarn | `yarn add @corbet-foss/cbcp` |
-| Bun | `bun add @corbet-foss/cbcp` |
-| Deno | `deno add jsr:@corbet-foss/cbcp` |
+| Node.js / npm | `npm install @corbet-labs/cbcp` |
+| pnpm | `pnpm add @corbet-labs/cbcp` |
+| Yarn | `yarn add @corbet-labs/cbcp` |
+| Bun | `bun add @corbet-labs/cbcp` |
+| Deno | `deno add jsr:@corbet-labs/cbcp` |
 | Python / pip | `python -m pip install cbcp` |
 | Python / uv | `uv add cbcp` |
 

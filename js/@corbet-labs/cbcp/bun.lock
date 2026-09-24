@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@corbet-foss/cbcp",
+      "name": "@corbet-labs/cbcp",
       "devDependencies": {
         "@types/node": "25.8.0",
         "bun-types": "^1.4.2",

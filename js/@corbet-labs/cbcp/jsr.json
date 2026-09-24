@@ -1,5 +1,5 @@
 {
-  "name": "@corbet-foss/cbcp",
+  "name": "@corbet-labs/cbcp",
   "version": "0.1.0",
   "exports": "./src/index.ts",
   "license": "LGPL-3.0-only WITH LicenseRef-corbet-linking-exception",

@@ -1,4 +1,4 @@
-# @corbet-foss/cbcp
+# @corbet-labs/cbcp
 
 TypeScript port of the `cbcp` Rust crate: deterministic BCP 47 locale-ID
 casting and vendor code mapping. Zero dependencies, zero Node APIs.

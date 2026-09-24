@@ -4,5 +4,5 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cp "$HERE"/LICENSES/*.txt "$HERE/py/LICENSES/"
-cp "$HERE"/LICENSES/*.txt "$HERE/js/@corbet-foss/cbcp/LICENSES/"
-git -C "$HERE" status --short LICENSES py/LICENSES js/@corbet-foss/cbcp/LICENSES || true
+cp "$HERE"/LICENSES/*.txt "$HERE/js/@corbet-labs/cbcp/LICENSES/"
+git -C "$HERE" status --short LICENSES py/LICENSES js/@corbet-labs/cbcp/LICENSES || true
