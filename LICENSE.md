@@ -2,11 +2,12 @@
 
 Copyright 2026 Julian Y. Richard Corbet.
 
-cbcp is licensed under [LGPL-3.0-only WITH LGPL-3.0-linking-exception](<LICENSES/LGPL-3.0-only WITH LGPL-3.0-linking-exception.txt>).
+cbcp is licensed under **LGPL-3.0-only WITH LGPL-3.0-linking-exception**.
 This covers the library's own Rust, JavaScript, Python and Typst
 implementations, shared vectors, tests and documentation. The complete
 [LGPL version 3](LICENSES/LGPL-3.0-only.txt) incorporates
-[GPL version 3](LICENSES/GPL-3.0-only.txt); the linking exception waives the
+[GPL version 3](LICENSES/GPL-3.0-only.txt); the
+[linking exception](LICENSES/LGPL-3.0-linking-exception.txt) waives the
 Minimal Corresponding Source, Minimal Application Code and
 installation-information duties (LGPLv3 §§4d/4e) for combined works that
 link statically or dynamically.

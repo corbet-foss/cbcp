@@ -58,12 +58,14 @@ documentation; a vendor change is a new `cbcp` minor version.
 | Deno | `deno add jsr:@corbet-labs/cbcp` |
 | Python / pip | `python -m pip install cbcp` |
 
-See [installation](docs/installation.md) for details and [releasing](docs/releasing.md)
-for the vector-first release process.
+See [installation](https://github.com/corbet-foss/cbcp/blob/main/docs/installation.md) for details and
+[releasing](https://github.com/corbet-foss/cbcp/blob/main/docs/releasing.md) for the vector-first release process.
 
 ## License
 
 Copyright 2026 Julian Y. Richard Corbet. Licensed under
-[LGPL-3.0-only WITH LGPL-3.0-linking-exception](<LICENSES/LGPL-3.0-only WITH LGPL-3.0-linking-exception.txt>).
-See [LICENSE.md](LICENSE.md).
+[LGPL-3.0-only](https://github.com/corbet-foss/cbcp/blob/main/LICENSES/LGPL-3.0-only.txt)
+[WITH LGPL-3.0-linking-exception](https://github.com/corbet-foss/cbcp/blob/main/LICENSES/LGPL-3.0-linking-exception.txt),
+with the incorporated [GPL version 3](https://github.com/corbet-foss/cbcp/blob/main/LICENSES/GPL-3.0-only.txt).
+See the [licensing notes](https://github.com/corbet-foss/cbcp/blob/main/LICENSE.md).
 Contributions are subject to the [Contributor License Agreement](CLA.md).

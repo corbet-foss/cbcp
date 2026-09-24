@@ -1,8 +1,8 @@
 {
   "name": "@corbet-labs/cbcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": "./src/index.ts",
-  "license": "LGPL-3.0-only WITH LicenseRef-corbet-linking-exception",
+  "license": "LGPL-3.0-only",
   "publish": {
     "include": [
       "src/**/*.ts",
@@ -10,9 +10,6 @@
       "LICENSES/**",
       "package.json",
       "jsr.json"
-    ],
-    "exclude": [
-      "LICENSES/LGPL-3.0-only WITH LGPL-3.0-linking-exception.txt"
     ]
   }
 }

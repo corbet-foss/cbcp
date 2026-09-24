@@ -3,8 +3,8 @@
 Python port of the `cbcp` Rust crate: deterministic BCP 47 locale-ID casting
 and vendor code mapping. Zero dependencies, Python 3.10+.
 
-See the [repository README](../README.md) for the rule and the
-[vectors](../tests/README.md) for the contract.
+See the [repository README](https://github.com/corbet-foss/cbcp/blob/main/README.md) for the rule and the
+[vectors](https://github.com/corbet-foss/cbcp/blob/main/tests/README.md) for the contract.
 
 ```sh
 python -m cbcp normalize " DE_Ch "

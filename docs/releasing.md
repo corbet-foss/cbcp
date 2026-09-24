@@ -1,21 +1,107 @@
-# Releasing
+# Releasing cbcp
 
 Vector-first: behavior changes land in `tests/vectors/*.json` before any
 port. Every port runs every vector verbatim.
+
+## Preparing a change
 
 1. Add or adjust vectors. A vendor documentation change (DeepL, Google) is a
    minor version bump by policy; everything else follows SemVer.
 2. Implement in Rust (`src/lib.rs`), TypeScript (`js/`), Python (`py/`),
    Typst (`typst/`). Keep the function mapping 1:1 across ports.
 3. Run `bash scripts/sync-licenses.sh`; the tree must stay clean afterwards.
-4. Verify locally:
-   - `cargo test` (vector runner plus unit tests, warning-free)
-   - `bun test` and `tsc --noEmit -p ./tsconfig.json` in `js/@corbet-labs/cbcp`
-   - `python3 py/scripts/conformance.py` with `PYTHONPATH=py`
-   - `typst compile --root . typst/tests/test.typ -f pdf <out>`
-5. Bump all four manifests to the same version (`Cargo.toml`,
-   `js/@corbet-labs/cbcp/package.json` + `jsr.json`, `py/pyproject.toml`,
-   `typst.toml`), update `CHANGELOG.md`.
-6. Publish Rust (crates.io), JavaScript (npm + JSR), Python (PyPI) and Typst
-   (registry) from the same tag. Verify installed artifacts per registry
-   before announcing.
+4. Select the affected `.ci/ccid.toml` checks (see [.ci/README.md](../.ci/README.md));
+   `typst/tests/test.typ` holds the Typst assertion suite.
+
+## Releasing
+
+Keep Cargo.toml, Cargo.lock, package.json, jsr.json, pyproject.toml, and
+typst.toml versions consistent (`python3 scripts/check-versions.py`). Published
+contents are immutable: use a new version for corrections.
+
+1. Update versions and CHANGELOG.md (a `## X.Y.Z - date` section becomes the
+   release notes). Commit to `main`.
+2. Optionally rehearse: run `.github/workflows/release.yml` from `main` without
+   a tag (`gh workflow run release.yml --ref main`). It runs the release checks
+   and imports and inspects the bundle, retaining it as a workflow artifact.
+   It creates no release and publishes nothing.
+3. Push the tag `vX.Y.Z` for the version in `Cargo.toml`. The tag push is the
+   only release trigger; `release.yml` then runs three jobs:
+   - `prepare` (read-only, no credentials) calls `ci.yml` at the tag with
+     `metadata,release-config,rust,javascript,rust-package,js-package,python-package,typst-package`.
+     Each package is built once and exported with its receipt and `hosted-run.json`.
+   - `bundle` (`contents: write`) requires tag == `v` + version, recreates the
+     exact source archive, imports those packages for Cargo, npm, JSR and PyPI
+     with `.ci/publish.py bundle` (the [shared import contract](https://github.com/corbet-libs/ccid/blob/27c248aefa3c7198be6716a884d290c717774b21/adapters/registry-publish.md)),
+     inspects it offline, and creates the GitHub release with
+     `publication-bundle.tar`, its `.sha256` and the import receipt `publication-bundle.json`.
+   - `publish` (`contents: write`, `id-token: write`) downloads that release
+     bundle, runs `status`, and uploads only missing packages: Cargo through
+     `rust-lang/crates-io-auth-action`, JSR through GitHub OIDC
+     (`RELEASE_JSR_AUTH=trusted`). npm and PyPI have no trusted publisher
+     rules yet; the job reports them as deferred without failing.
+4. Upload deferred npm and PyPI packages from the same release bundle with
+   registry tokens (below). The publisher verifies the live tag and release,
+   journals each upload on the release, and verifies the public bytes.
+5. Run the published-consumer checks (`published-npm`, `published-jsr`,
+   `published-python`) and state the status per registry. A successful upload
+   response or version collision is insufficient proof.
+
+`cbcp` has no sibling dependencies; publish it before `cletter`, which composes
+this crate, and resolve cletter's committed locks against the published version.
+
+## Re-running
+
+A transient failure is retried with "Re-run failed jobs"; earlier jobs'
+packages are reused. To reconcile or publish an existing release again (for
+example after a registry rule is added), dispatch `release.yml` with
+`tag=vX.Y.Z`: it skips `prepare` and `bundle` and publishes from the release's
+existing bundle. Uploads are never repeated after an uncertain outcome; the
+release journals block them. If `bundle` fails before the release exists and
+nothing was published, fix `main`, then delete and re-push the tag or release a
+new patch version.
+
+## Operator upload for npm and PyPI
+
+Until npm and PyPI trust `corbet-foss/cbcp:release.yml`, upload them from the
+release bundle on a workstation. No build runs; the publisher only verifies and
+uploads the reviewed bytes. It needs `GH_TOKEN` with `contents: write` on this
+repository (for the publication journals), and `NPM_TOKEN` or `PYPI_TOKEN` for
+the selected registry:
+
+```sh
+tag=vX.Y.Z repo=corbet-foss/cbcp rev=27c248aefa3c7198be6716a884d290c717774b21
+work=$(mktemp -d) && cd "$work"
+git clone -q --depth 1 --branch "$tag" "https://github.com/$repo" source
+git clone -q https://github.com/corbet-libs/ccid publisher && git -C publisher checkout -q "$rev"
+git -C publisher archive --format=tar HEAD > publisher.tar
+gh release download "$tag" -R "$repo" -p publication-bundle.tar -p publication-bundle.tar.sha256
+sha256sum --check --strict publication-bundle.tar.sha256
+export CCID_REVISION="$rev" CI_TOOL_ARCHIVE="$PWD/publisher.tar" \
+  CI_TOOL_SHA256="$(sha256sum publisher.tar | cut -d ' ' -f 1)" \
+  RELEASE_BUNDLE="$PWD/publication-bundle.tar" \
+  RELEASE_BUNDLE_SHA256="$(cut -d ' ' -f 1 publication-bundle.tar.sha256)" \
+  RELEASE_JOURNAL_ROOT="$PWD/journals" GH_TOKEN="$(gh auth token)"
+python3 source/.ci/publish.py status
+NPM_TOKEN="$(sops --decrypt ~/agents/knowledge/secrets/npm.yml | yq -r .api_token)" \
+  python3 source/.ci/publish.py publish --channels npm
+PYPI_TOKEN="$(sops --decrypt ~/agents/knowledge/secrets/pypi.yml | yq -r .api_token)" \
+  python3 source/.ci/publish.py publish --channels pypi
+```
+
+`rev` is the `CCID_REVISION` pinned in the tag's `release.yml`. Keep the
+`journals` directory until every registry reports its package as verified.
+
+Crow keeps a manual `release` route for the same bundle if GitHub Actions is
+unavailable. Credentials remain outside repository source and check jobs.
+Registry account controls are read as prerequisites; these adapters never
+change registry policy or create trusted publisher rules.
+
+The npm registry serves npm, pnpm, Yarn, Bun, Deno's npm imports, and browser
+CDNs. A successful Linux check does not prove native Windows/macOS behavior.
+Minimum-runtime checks are separate from current-runtime checks. Record any
+unavailable runtime or registry explicitly instead of marking it verified.
+
+The Typst archive installs into an `@local` package namespace; `cbcp` is not on
+Typst Universe (see [installation](installation.md)). The release run's
+`prepare` artifact retains the checked Typst archive and receipt for 14 days.
