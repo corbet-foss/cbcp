@@ -23,9 +23,11 @@ PACKAGE = tomllib.loads((ROOT / "Cargo.toml").read_text())["package"]
 NAME, VERSION = PACKAGE["name"], PACKAGE["version"]
 JS = ROOT / "js" / "@corbet-labs" / NAME
 
-# The JavaScript package ships its TypeScript sources without a build step, so
-# installed-package consumers run under Bun and Deno, which load .ts directly.
-# Every consumer runs the complete shared vector suite from tests/vectors.
+# The npm package ships compiled ESM, CommonJS and declarations (built by
+# scripts/build.mjs on prepack), so installed-package consumers run under plain
+# Node.js through both import and require, under Bun, and through tsc in both
+# declaration modes. JSR keeps publishing the TypeScript sources for Deno.
+# Every runtime consumer runs the complete shared vector suite from tests/vectors.
 VERIFY_API = """import vectors from './vectors.json' with { type: 'json' };
 const FNS = {
     normalize_locale_id: (api, input) => api.normalizeLocaleId(input),
@@ -48,8 +50,21 @@ export function verify(api) {
     console.log(`${vectors.length} shared vectors passed`);
 }
 """
-CONSUMER = f"""import {{ verify }} from './verify-api.mjs';
+CONSUMER = f"""import {{ createRequire }} from 'node:module';
+import {{ verify }} from './verify-api.mjs';
 verify(await import('@corbet-labs/{NAME}'));
+verify(createRequire(import.meta.url)('@corbet-labs/{NAME}'));
+console.log('{NAME}: installed ESM and CommonJS exports passed');
+"""
+# Compile-only use of every export; the same text is checked as .mts (import
+# condition, index.d.ts) and .cts (require condition, index.d.cts).
+TYPES_CONSUMER = f"""import * as api from '@corbet-labs/{NAME}';
+const strings: string[] = [
+    api.normalizeLocaleId(' DE_Ch '), api.toBcp47('de_ch'), api.baseLanguage('de-CH'),
+    api.deeplSource('en-US'), api.deeplTarget('en-us'), api.googleLanguage('zh-hant'),
+];
+const flags: boolean[] = [api.isWellFormed('de-CH'), api.localeEq('de_CH', 'de-ch')];
+export const sample = [strings, flags];
 """
 
 
@@ -170,9 +185,20 @@ def pack_check(manager, tarball):
         actual = {path.name: path.read_bytes() for path in (installed / "LICENSES").iterdir() if path.is_file()}
         if actual != expected:
             raise ValueError("Installed license inventory or texts differ")
+        if (installed / "tests").exists():
+            raise ValueError("Installed package must not ship tests/")
         js_helpers(consumer)
+        # Plain Node.js must load the package with no TypeScript loader.
+        run("node", "consumer.mjs", cwd=consumer)
         run("bun", "consumer.mjs", cwd=consumer)
-        print(f"@corbet-labs/{NAME}: {manager} installation passed")
+        for extension in ("mts", "cts"):
+            (consumer / f"consumer-types.{extension}").write_text(TYPES_CONSUMER)
+        (consumer / "tsconfig.json").write_text(json.dumps({
+            "compilerOptions": {"noEmit": True, "strict": True, "module": "NodeNext", "target": "ES2022", "types": []},
+            "files": ["consumer-types.mts", "consumer-types.cts"],
+        }))
+        run("node", JS / "node_modules" / "typescript" / "bin" / "tsc", "-p", "tsconfig.json", cwd=consumer)
+        print(f"@corbet-labs/{NAME}: {manager} installation, Node.js/Bun runtimes and both declaration modes passed")
 
 
 def js_package():
@@ -184,8 +210,9 @@ def js_package():
     run("deno", "publish", "--dry-run", "--allow-dirty", cwd=JS)
     with tempfile.TemporaryDirectory(prefix=f"{NAME}-deno-") as temporary:
         verifier = js_helpers(Path(temporary))
-        source = (JS / "src" / "index.ts").as_uri()
-        run("deno", "eval", f"import {{verify}} from '{verifier}'; import * as api from '{source}'; verify(api);", cwd=JS)
+        for entry in ("src/index.ts", "dist/index.js"):
+            source = (JS / entry).as_uri()
+            run("deno", "eval", f"import {{verify}} from '{verifier}'; import * as api from '{source}'; verify(api);", cwd=JS)
     export("js-package", [tarball])
 
 
@@ -229,6 +256,7 @@ def js_manager(manager):
     tarball = directory / npm_tarball().name
     if receipt["commit"] != os.environ["CI_COMMIT_SHA"] or receipt["artifacts"].get(tarball.name) != digest(tarball):
         raise ValueError("JavaScript artifact identity differs from its receipt")
+    js_install()  # Provides tsc for the declaration consumer; never rebuilds the tarball.
     pack_check(manager, tarball)
     export(f"js-{manager}", [tarball])
 
@@ -359,6 +387,7 @@ def published(channel):
             (scratch / "package.json").write_text('{"private":true,"type":"module"}\n')
         if channel == "npm":
             run("npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", f"@corbet-labs/{NAME}@{VERSION}", cwd=scratch)
+            run("node", "consumer.mjs", cwd=scratch)
             run("bun", "consumer.mjs", cwd=scratch)
         elif channel == "jsr":
             run("deno", "eval", "--min-dep-age=0", f"import * as api from 'jsr:@corbet-labs/{NAME}@{VERSION}'; import {{verify}} from '{verifier}'; verify(api);", cwd=scratch)
@@ -393,6 +422,7 @@ TOOLS = {
     "javascript": [("node", "--version"), ("bun", "--version")],
     "js-package": [("node", "--version"), ("bun", "--version"), ("npm", "--version"), ("deno", "--version")],
     "jsr-package": [("python3", "--version"), ("deno", "--version")],
+    **{f"js-{manager}": [("node", "--version"), ("bun", "--version"), ("npm", "--version")] for manager in ("pnpm", "yarn", "bun")},
     "python-package": [("python3", "--version"), ("uv", "--version")],
     "typst-package": [("python3", "--version"), ("uv", "--version")],
     "rust-package": [("rustc", "--version"), ("cargo", "--version")],

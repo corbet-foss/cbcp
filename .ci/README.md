@@ -91,9 +91,9 @@ only for matching source, dependency closure, tools, configuration and environme
 | `rust-msrv` | Minimum Rust tests; Crow requires provisioned 1.94.0, while hosted setup reads `Cargo.toml` |
 | `javascript` | Strict TypeScript and shared source vectors |
 | `rust-package` | Build and verify the registry-resolved Cargo package |
-| `js-package` | Pack once; installed npm package under Bun and TypeScript sources under Deno run every shared vector; JSR dry-run |
+| `js-package` | Build and pack once; installed npm package under plain Node.js (`import` and `require`) and Bun runs every shared vector, tsc checks its declarations in both module modes; TypeScript sources and the ESM build under Deno; JSR dry-run |
 | `jsr-package` | Validate exact JSR sources and export a deterministic publication archive without rebuilding npm/Rust |
-| `js-pnpm`, `js-yarn`, `js-bun` | Selected additional manager consuming the same verified npm tarball |
+| `js-pnpm`, `js-yarn`, `js-bun` | Selected additional manager consuming the same verified npm tarball, with the same Node.js, Bun and declaration consumers |
 | `python-package` | Wheel/sdist, installed-wheel vectors, license inventory, metadata and CLI consumers |
 | `typst-package` | Deterministic archive and actual installed Typst import |
 | `rust-dependencies` | Pre-publication source tests using checksum-verified sibling crates in private scratch |
@@ -124,7 +124,7 @@ registry credentials outside these verification jobs.
 
 For a JSR metadata correction, select `jsr-package` with `ARTIFACT_ROOT`. It copies
 the root README and both license texts, validates only the publication inputs with
-`deno publish --dry-run --allow-dirty`, and exports `cbcp-0.1.1-jsr.tar.gz` with a
+`deno publish --dry-run --allow-dirty`, and exports `cbcp-0.1.2-jsr.tar.gz` with a
 `jsr-package.json` receipt. Upload that exact archive after checking its receipt
 and hash. JSR requires one SPDX identifier, so its metadata declares plain
 LGPL-3.0-only; the linking-exception text ships in-bundle and the js README
@@ -155,9 +155,11 @@ This is integration evidence, not registry package verification. `rust-package`
 always uses normal registry resolution and requires published dependencies.
 Neither the source tree nor the released manifest acquires local path patches.
 
-The npm package ships TypeScript sources without a build step. Node.js does not
-strip types inside `node_modules`, so installed-package consumers run under Bun
-and Deno; there is no Typst Universe submission check (`typst-preview`).
+The npm package is built on `prepack` by `js/@corbet-labs/cbcp/scripts/build.mjs`
+into `dist/` (ESM, CommonJS, declarations); Node.js does not strip types inside
+`node_modules`, so the installed-package consumers run under plain Node.js to
+prove no TypeScript loader is needed. JSR still publishes the TypeScript sources.
+There is no Typst Universe submission check (`typst-preview`).
 
 The shared runner bounds concurrency to two build/test threads by default and
 selected checks to 900 seconds; `CI_JOBS`, `CI_TEST_THREADS`, and `CI_TIMEOUT` can

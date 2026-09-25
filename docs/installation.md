@@ -11,10 +11,11 @@
 | Python / pip | `python -m pip install cbcp` |
 | Python / uv | `uv add cbcp` |
 
-The npm and JSR packages ship pure `.ts` sources with zero dependencies. Bun,
-Deno and TypeScript-aware bundlers import them directly; plain Node.js refuses
-to strip types inside `node_modules`, so Node.js consumers need a bundler or
-TypeScript loader. Python 3.10+. Typst consumers vendor `typst/cbcp.typ`
+Both JavaScript packages have zero dependencies. The npm package ships compiled
+ESM (`import`), CommonJS (`require`) and TypeScript declarations for both module
+modes, so plain Node.js 20+, Bun, bundlers and browsers load it without a
+TypeScript loader. The JSR package publishes the `.ts` sources, which Deno
+imports directly. Python 3.10+. Typst consumers vendor `typst/cbcp.typ`
 alongside its notice, following the family snapshot practice.
 
 Every release publishes the same version to crates.io, npm, JSR and PyPI. The
